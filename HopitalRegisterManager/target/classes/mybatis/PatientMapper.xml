@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rabbiter.hospital.mapper.PatientMapper">
+    <update id="changePatientById">
+        UPDATE patient SET p_name = #{pName}, p_phone = #{pPhone} WHERE p_id = #{pId}
+    </update>
+    <select id="patientAge" resultType="Integer">
+        SELECT COUNT(*) AS count
+        FROM patient
+        WHERE YEAR(CURRENT_DATE)-YEAR(p_birthday)  BETWEEN #{startAge} AND #{endAge}
+    </select>
+
+
+</mapper>

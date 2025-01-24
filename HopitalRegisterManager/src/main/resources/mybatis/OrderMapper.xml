@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hospital.mapper.OrderMapper">
+    <!--定义封装account和user的resultMap-->
+    <resultMap id="orderPatientMap" type="com.hospital.pojo.Orders">
+        <id property="oId" column="o_id" />
+        <result property="pId" column="p_id" />
+        <result property="dId" column="d_id" />
+        <result property="oRegisterTime" column="o_register_time" />
+        <result property="countGender" column="countGender"/>
+        <!--一对一的关系映射，配置封装user的内容 column中指名从表的外键 property="user"指的是单个实体类的引用-->
+        <association property="patient" javaType="com.hospital.pojo.Patient">
+            <result property="pId" column="p_id" />
+            <result property="pGender" column="p_gender"/>
+        </association>
+    </resultMap>
+
+    <!--传入多个参数-->
+    <!--    1. 不需要parameterType参数-->
+    <!--    2. mapper文件用注解@Param注解参数名-->
+    <!--    3. xml文件要使用2中的参数名-->
+    <select id="orderPeople" resultType="Integer" parameterType="String">
+        select count(p_id) as countGender from orders
+        where d_id = (select d_id from orders where p_id=#{pId} and o_status=0 and DATE(o_sign_time) = CURDATE())
+        and o_status=0 and DATE(o_sign_time) = CURDATE() and o_sign_time &lt; (select o_sign_time from orders where p_id=#{pId} and o_status=0 and DATE(o_sign_time) = CURDATE())
+    </select>
+
+    <select id="orderPeopleByDid" resultType="Integer">
+        select count(p_id) from orders where o_register_time like #{oStart}"%" and d_id=#{dId}
+    </select>
+
+
+    <select id="orderGender" resultMap="orderPatientMap">
+        select p_gender,count(p_gender) as countGender from patient p,orders o  where p.p_id=o.p_id GROUP BY p_gender
+    </select>
+
+
+    <resultMap id="orderOidMap" type="com.hospital.pojo.Orders">
+        <id property="oId" column="o_id" />
+        <result property="pId" column="p_id" />
+        <result property="dId" column="d_id" />
+        <result property="oRegisterTime" column="o_register_time" />
+        <result property="oPayTime" column="o_pay_time" />
+        <result property="oRecord" column="o_record"/>
+        <result property="oDrug" column="o_drug"/>
+        <result property="oItem" column="o_item"/>
+        <result property="oMaterial" column="o_material"/>
+        <result property="oTotalPrice" column="o_total_price"/>
+        <result property="oAdvice" column="o_advice"/>
+
+        <!--一对一的关系映射，配置封装user的内容 column中指名从表的外键 property="user"指的是单个实体类的引用-->
+        <association property="patient" javaType="com.hospital.pojo.Patient">
+            <result property="pId" column="p_id" />
+            <result property="pName" column="p_name"/>
+            <result property="pPhone" column="p_phone"/>
+            <result property="pGender" column="p_gender"/>
+            <result property="pAge" column="p_age"/>
+        </association>
+    </resultMap>
+    <select id="findOrderByOid" resultMap="orderOidMap">
+        select * from orders o,patient p where o.p_id = p.p_id and o.o_id=#{oId}
+    </select>
+
+    <update id="updateOrderByAdd" parameterType="com.hospital.pojo.Orders">
+        update orders set o_item = concat(o_item,#{oItem}),o_drug = concat(o_drug,#{oDrug}),o_total_price = #{oTotalPrice},o_advice = #{oAdvice} where o_id=#{oId}
+    </update>
+    <update id="qiandao">
+        update orders
+        set o_sign_time=NOW()
+        where p_id=#{pId}
+    </update>
+
+
+    <resultMap id="orderSectionMap" type="com.hospital.pojo.Orders">
+        <id property="oId" column="o_id" />
+        <result property="dId" column="d_id" />
+        <result property="oRegisterTime" column="o_register_time" />
+        <result property="countSection" column="countSection"/>
+        <!--一对一的关系映射，配置封装user的内容 column中指名从表的外键 property="user"指的是单个实体类的引用-->
+        <association property="doctor" javaType="com.hospital.pojo.Doctor">
+            <result property="dId" column="d_id" />
+            <result property="dSection" column="d_section"/>
+        </association>
+    </resultMap>
+
+    <select id="orderSection" resultMap="orderSectionMap">
+        SELECT d.d_section,count(o.d_id) as countSection from orders o,doctor d where o.d_id=d.d_id
+        AND o_register_time BETWEEN #{startTime} and #{endTime}
+        GROUP BY d.d_section
+    </select>
+
+    <resultMap id="orderPatientDoctorMap" type="com.hospital.pojo.Orders">
+        <id property="oId" column="o_id" />
+        <result property="pId" column="p_id" />
+        <result property="dId" column="d_id" />
+        <result property="oRegisterTime" column="o_register_time" />
+        <result property="oPayTime" column="o_pay_time" />
+        <result property="oTotalPrice" column="o_total_price" />
+        <result property="oPriceStatus" column="o_price_status" />
+        <result property="oStatus" column="o_status" />
+        <result property="oSignTime" column="o_sign_time" />
+        <result property="dName" column="dName" />
+        <result property="pName" column="pName" />
+        <result property="dSection" column="dSection" />
+            <!--一对一的关系映射，配置封装user的内容 column中指名从表的外键 property="user"指的是单个实体类的引用-->
+        <association property="doctor" javaType="com.hospital.pojo.Doctor">
+            <result property="dId" column="d_id" />
+            <result property="dName" column="d_name" />
+            <result property="dSection" column="d_section" />
+        </association>
+        <association property="patient" javaType="com.hospital.pojo.Patient">
+            <result property="pId" column="p_id" />
+            <result property="pName" column="p_name" />
+        </association>
+    </resultMap>
+    <select id="findOrderByNull" resultMap="orderPatientDoctorMap">
+        SELECT o.o_id,d.d_name as dName,o.p_id,p.p_name as pName,o.o_register_time,o_sign_time
+        from orders o JOIN doctor d JOIN patient p
+        on o.d_id=#{dId}
+        and o.d_id=d.d_id
+        and o.p_id=p.p_id
+        and o.o_register_time like #{oStart}"%"
+        and o.o_status=0
+        ORDER BY o.o_sign_time
+    </select>
+    <select id="findOrderByDid" resultMap="orderPatientDoctorMap">
+        SELECT o.o_id,d.d_name as dName,o.p_id,p.p_name as pName,o.o_register_time,o.o_status,o.o_price_status
+        from orders o JOIN doctor d JOIN patient p
+                                         on o.d_id=#{dId}
+                                             and o.d_id=d.d_id
+                                             and o.p_id=p.p_id
+        ORDER BY o.o_register_time
+    </select>
+    <select id="findOrderByPid" resultMap="orderPatientDoctorMap">
+        SELECT o.o_id,o.d_id,d.d_name as dName,o.p_id,p.p_name as pName,o.o_register_time,o.o_pay_time,o.o_total_price,o.o_price_status,o.o_status,d.d_section as dSection
+        from orders o JOIN doctor d JOIN patient p
+        on o.p_id=#{pId}
+        and o.d_id=d.d_id
+        and o.p_id=p.p_id
+        ORDER BY o.o_pay_time DESC
+    </select>
+
+
+
+</mapper>
