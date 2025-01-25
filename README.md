@@ -1,4 +1,5 @@
-# HospitalRegisterManager牙科医院预约管理系统
+# HospitalRegisterManager牙科医院预约管理系统   
+一个牙科医院预约管理系统
 
 #### 介绍
 技术栈：SpringBoot、MyBatis-Plus、MySQL、Redis、Vue3、ElementUI   
